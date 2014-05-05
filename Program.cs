@@ -49,29 +49,40 @@ namespace XBIMConsole
                     foreach (IfcBuilding building in buildings)
                     {
                         Console.WriteLine("--" + building.Name + "(" + building.BuildingAddress + ")");
-                        //building.GetPropertySet("Pset_BuildingCommon");
-
+                        
                         IEnumerable<IfcBuildingStorey> levels = building.GetBuildingStoreys();
                         foreach (IfcBuildingStorey level in levels)
                         {
-                            Console.WriteLine("---" + level.Name);
 
+                            IEnumerable<IfcObjectDefinition> children_l = level.SpatialStructuralElementChildren;
+                            Console.WriteLine("---" + level.Name + "[Total children=" + children_l.Count()+"]");
+                            
+                            /*
+                            IEnumerable<IfcRelContainedInSpatialStructure> ss = level.ContainsElements;
+                            foreach (IfcRelContainedInSpatialStructure s in ss) {
+                                Console.WriteLine(s.Name);
+                            }
+                            */
+                            
                             IEnumerable<IfcSpace> spaces = level.GetSpaces();
                             foreach (IfcSpace space in spaces)
                             {
-                                Console.WriteLine("----" + space.Name + " " + space.LongName + "["
+                                IfcObjectDefinition parent_s = space.SpatialStructuralElementParent;
+                                
 
-                                    + " net floor area=" + space.GetNetFloorArea()
-                                    //+", height=" + space.GetHeight()
-                                    //+", ps=" + space.GetAllPropertySets().ToArray().ToString()
+                                Console.WriteLine("----" + space.Name + " " + space.LongName + "["
+                                    + " parent name=" + parent_s.Name
+                                    + ", parent type=" + parent_s.GetType()
+                                    + ", net floor area=" + space.GetNetFloorArea()
                                     + "]");
+
                                 List<IfcPropertySet> sets = space.GetAllPropertySets();
                                 foreach (IfcPropertySet set in sets)
                                 {
                                     Console.WriteLine("----->" + set.Name);
                                     foreach (IfcProperty prop in set.HasProperties)
                                     {
-                                        //Console.WriteLine("-------" + prop.Name + "="+space.GetPropertySingleValue(set.Name, prop.Name));
+                                       // Console.WriteLine("-------" + prop.Name + "="+space.GetPropertySingleValue(set.Name, prop.Name));
                                     }
                                 }
 
@@ -81,10 +92,10 @@ namespace XBIMConsole
                     }
 
                 }
-
-
-                IEnumerable<IfcWall> walls = model.Instances.OfType<IfcWall>();
                 
+                IEnumerable<IfcWall> walls = model.Instances.OfType<IfcWall>();
+                Console.WriteLine(walls.Count());
+
             }
                 
             Console.WriteLine("----------------------------------------------------");
