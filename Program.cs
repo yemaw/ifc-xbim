@@ -63,6 +63,15 @@ namespace XBIMConsole
 
                             Console.WriteLine("---" + level.Name + "[Total children=" + children_l.Count()+",decomposed related="+objs.Count()+"]");
 
+                            IEnumerable<IfcProduct> products_l =  level.GetContainedElements();
+                            string included_products_l = "";
+                            foreach (IfcProduct product in products_l)
+                            {
+                                included_products_l += product.Name;
+                            }
+                            Console.WriteLine("products in level=>"+included_products_l);
+
+
                             //IfcShapeRepresentation axis = level.GetAxisRepresentation();
                             //IfcShapeRepresentation body = level.GetBodyRepresentation();
                             
@@ -100,13 +109,13 @@ namespace XBIMConsole
                                     + "]");
 
                                 /* Products in a space */
-                                IEnumerable<IfcProduct> products = space.GetContainedElements();
-                                string included_products = "";
-                                foreach (IfcProduct product in products)
+                                IEnumerable<IfcProduct> products_s = space.GetContainedElements();
+                                string included_products_s = "";
+                                foreach (IfcProduct product in products_s)
                                 {
-                                    included_products += product.Name;
+                                    included_products_s += product.Name;
                                 }
-                                Console.WriteLine(included_products);
+                                //Console.WriteLine("products in space=>"+included_products_s);
 
                                 List<IfcPropertySet> sets = space.GetAllPropertySets();
                                 foreach (IfcPropertySet set in sets)
