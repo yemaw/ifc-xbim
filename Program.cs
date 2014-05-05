@@ -15,9 +15,11 @@ using Xbim.Ifc2x3.Kernel;
 using Xbim.Ifc2x3.MeasureResource;
 using Xbim.ModelGeometry.Converter;
 using Xbim.Ifc2x3.Extensions;
+
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.PropertyResource;
+using Xbim.Ifc2x3.RepresentationResource;
 
  
 namespace XBIMConsole
@@ -55,8 +57,27 @@ namespace XBIMConsole
                         {
 
                             IEnumerable<IfcObjectDefinition> children_l = level.SpatialStructuralElementChildren;
-                            Console.WriteLine("---" + level.Name + "[Total children=" + children_l.Count()+"]");
+
+                            IEnumerable<IfcRelDecomposes> decomp = level.IsDecomposedBy;
+                            IEnumerable<IfcObjectDefinition> objs = decomp.SelectMany(s => s.RelatedObjects);
+
+                            Console.WriteLine("---" + level.Name + "[Total children=" + children_l.Count()+",decomposed related="+objs.Count()+"]");
+
+                            //IfcShapeRepresentation axis = level.GetAxisRepresentation();
+                            //IfcShapeRepresentation body = level.GetBodyRepresentation();
                             
+                            //IEnumerable<IfcWall> walls = model.Instances.OfType<IfcWall>();
+
+                            /*
+                            IEnumerable<IfcRelDefines> defines =  level.IsDefinedBy;
+                            foreach (IfcRelDefines define in defines) {
+                                IfcObjectSet objects = define.RelatedObjects;
+                                foreach(IfcObject o in objects){      
+                                    Console.WriteLine(o.Name);
+                                }
+                            }
+                            */
+
                             /*
                             IEnumerable<IfcRelContainedInSpatialStructure> ss = level.ContainsElements;
                             foreach (IfcRelContainedInSpatialStructure s in ss) {
@@ -68,13 +89,24 @@ namespace XBIMConsole
                             foreach (IfcSpace space in spaces)
                             {
                                 IfcObjectDefinition parent_s = space.SpatialStructuralElementParent;
-                                
+                                IEnumerable<IfcObjectDefinition> children_s = space.SpatialStructuralElementChildren;
+                                //IEnumerable<IfcRelContainedInSpatialStructure> c_structures = space.ContainsElements;
 
                                 Console.WriteLine("----" + space.Name + " " + space.LongName + "["
                                     + " parent name=" + parent_s.Name
                                     + ", parent type=" + parent_s.GetType()
+                                    //+ ", spatial structure count=" + c_structures.Count()
                                     + ", net floor area=" + space.GetNetFloorArea()
                                     + "]");
+
+                                /* Products in a space */
+                                IEnumerable<IfcProduct> products = space.GetContainedElements();
+                                string included_products = "";
+                                foreach (IfcProduct product in products)
+                                {
+                                    included_products += product.Name;
+                                }
+                                Console.WriteLine(included_products);
 
                                 List<IfcPropertySet> sets = space.GetAllPropertySets();
                                 foreach (IfcPropertySet set in sets)
@@ -93,8 +125,8 @@ namespace XBIMConsole
 
                 }
                 
-                IEnumerable<IfcWall> walls = model.Instances.OfType<IfcWall>();
-                Console.WriteLine(walls.Count());
+                //IEnumerable<IfcWall> walls = model.Instances.OfType<IfcWall>();
+                //Console.WriteLine(walls.Count());
 
             }
                 
