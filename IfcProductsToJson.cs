@@ -56,13 +56,17 @@ namespace XBIMConsole
                 product_d.Add("global_id", product.GlobalId);
 
                 //2)Product's Summary
-                Dictionary<string, object> summaries_d = new Dictionary<string, object>();
+                List<string> summaries_a = new List<string>();
                 StringCollection summaries = product.SummaryString();
-                summaries_d.Add("entity", summaries[0]);
-                summaries_d.Add("guid", summaries[1]);
-                summaries_d.Add("type", summaries[2]);
-                summaries_d.Add("name", summaries[3]);
-                product_d.Add("summary", summaries_d);
+                foreach (string s in summaries) {
+                    summaries_a.Add(s);
+                }
+                //Dictionary<string, object> summaries_d = new Dictionary<string, object>();
+                //summaries_d.Add("entity", summaries[0]);
+                //summaries_d.Add("guid", summaries[1]);
+                //summaries_d.Add("type", summaries[2]);
+                //summaries_d.Add("name", summaries[3]);
+                product_d.Add("summary", summaries_a);
 
                 //3)Product's Properties
                 Dictionary<string, Dictionary<string, string>> props_set_d = new Dictionary<string, Dictionary<string, string>>();
