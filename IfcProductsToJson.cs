@@ -61,11 +61,6 @@ namespace XBIMConsole
                 foreach (string s in summaries) {
                     summaries_a.Add(s);
                 }
-                //Dictionary<string, object> summaries_d = new Dictionary<string, object>();
-                //summaries_d.Add("entity", summaries[0]);
-                //summaries_d.Add("guid", summaries[1]);
-                //summaries_d.Add("type", summaries[2]);
-                //summaries_d.Add("name", summaries[3]);
                 product_d.Add("summary", summaries_a);
 
                 //3)Product's Properties
@@ -102,15 +97,35 @@ namespace XBIMConsole
                     
                 }
                 product_d.Add("properties_set", props_set_d);
+
+                //Product's Is Conatined In
+                Dictionary<string, object> contained_in_d = new Dictionary<string, object>();
+                IEnumerable<IfcSpatialStructureElement> contained_in = product.IsContainedIn();
+                foreach (IfcSpatialStructureElement container in contained_in) {
+                    contained_in_d.Add("name", container.Name.Value + ""); //there is also .ToPart21 property in .Name and .LongName 
+                    contained_in_d.Add("long_name", container.LongName.Value + "");
+                    contained_in_d.Add("description", container.Description);
+                }
+                product_d.Add("is_contained_in", contained_in_d);
                 
-                
+                //testing-------------------------
+                IEnumerable<XbimGeometryData> gdata = product.GeometryData(XbimGeometryType.Region);
+                //Console.WriteLine(gdata.Count());
+                IEnumerable<IfcRelAssigns> assi = product.HasAssignments;
+                //Console.WriteLine(assi.Count());
+
+                IEnumerable<IfcRelAssociates> asso = product.HasAssociations;
+                foreach (IfcRelAssociates ass in asso)
+                {
+                    //Console.WriteLine(ass.EntityLabel);    
+                }
 
                 //---------- Insert packed product into ouput body----------------
                 data.Insert(products_counter, product_d);
                 products_counter++;
 
                 Console.Write("\rCurrent count - {0}", products_counter-1);
-                if (products_counter == 10) { break; }
+                //if (products_counter == 10) { break; }
             }
             
             //--------------------- Packing Project in one object ----------------
