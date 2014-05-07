@@ -37,42 +37,41 @@ namespace XBIMConsole
     class IfcProductsToJson
     {
         public void writeProducts(XbimModel model) {
-            Dictionary<string, Dictionary<string, string>> hash = new Dictionary<string, Dictionary<string, string>>();
+            
+            //
             Dictionary<string, string> header = new Dictionary<string, string>();
-            List<Dictionary<string, Dictionary<string, string>>> data = new List<Dictionary<string, Dictionary<string, string>>>();
-
+            List<Dictionary<string, Dictionary<string, Dictionary<string, string>>>> data = new List<Dictionary<string, Dictionary<string, Dictionary<string, string>>>>();
+            
             IEnumerable<IfcProduct> products = model.Instances.OfType<IfcProduct>();
             
-            header.Add("project_name", model.IfcProject.Name);
-            header.Add("products_count", products.Count().ToString());
-
-            int count = 0;
+            int products_counter = 0;
             foreach (IfcProduct product in products)
             {
-                Dictionary<string, Dictionary<string, string>> product_d = new Dictionary<string, Dictionary<string, string>>();
+                Dictionary<string, Dictionary<string, Dictionary<string, string>>> product_d = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
                 
                 //Properties
+                Dictionary<string, Dictionary<string, string>> props_set_d = new Dictionary<string, Dictionary<string, string>>();
                 List<IfcPropertySet> sets = product.GetAllPropertySets();
                 foreach (IfcPropertySet set in sets)
                 {
-                    Dictionary<string, string> pset_d = new Dictionary<string, string>();
+                    Dictionary<string, string> props_d = new Dictionary<string, string>();
                     
                     foreach (IfcProperty prop in set.HasProperties)
                     {
-                        pset_d.Add(prop.Name.ToString(), product.GetPropertySingleValue(set.Name, prop.Name) + "");
+                        props_d.Add(prop.Name.ToString(), product.GetPropertySingleValue(set.Name, prop.Name) + "");
                     }
 
-                    if (product_d.ContainsKey(set.Name.ToString())) //mearge if already exist.
+                    if (props_set_d.ContainsKey(set.Name.ToString())) //mearge if already exist.
                     { 
-                        foreach (KeyValuePair<string, string> entry in pset_d)
+                        foreach (KeyValuePair<string, string> entry in props_d)
                         {
-                            if (product_d.ContainsKey(set.Name))
+                            if (props_set_d.ContainsKey(set.Name))
                             {
-                                product_d[set.Name][entry.Key] = entry.Value; //replace
+                                props_set_d[set.Name][entry.Key] = entry.Value; //replace
                             }
                             else 
                             {
-                                product_d[set.Name].Add(entry.Key, entry.Value); //add new
+                                props_set_d[set.Name].Add(entry.Key, entry.Value); //add new
                             }
                             
                         }
@@ -81,18 +80,24 @@ namespace XBIMConsole
                     } 
                     else 
                     {
-                        product_d.Add(set.Name.ToString(), pset_d);
+                        props_set_d.Add(set.Name.ToString(), props_d);
                     }
                     
                 }
+                
+                product_d.Add("properties_set", props_set_d);
 
-                Console.Write("\rCurrent count - {0}", count);
-                data.Insert(count, product_d);
-                count++;
-                //if (count == 100) { break; }
+                Console.Write("\rCurrent count - {0}", products_counter);
+                data.Insert(products_counter, product_d);
+                products_counter++;
+                if (products_counter == 100) { break; }
             }
-             
-            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(data));
+            string output = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+            
+            System.IO.File.WriteAllText(Directory.GetCurrentDirectory()+"/output.txt", output);
+
+            //header.Add("project_name", model.IfcProject.Name);
+            //header.Add("products_count", products.Count().ToString());
         }
     }
 }
