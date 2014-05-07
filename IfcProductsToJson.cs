@@ -24,42 +24,75 @@ using Xbim.Ifc2x3.RepresentationResource;
 using System.Runtime.Serialization;
 //using System.Web.Script.Serialization.JavaScriptSerializer;
 //using Newtonsoft.Json;
+/*
+ IfcProduct
+ -- PropertiesSet
+ ---- Dimension
+ ---- Constraints
+ --
+ */ 
 
 namespace XBIMConsole
 {
     class IfcProductsToJson
     {
         public void writeProducts(XbimModel model) {
+            Dictionary<string, Dictionary<string, string>> hash = new Dictionary<string, Dictionary<string, string>>();
+            Dictionary<string, string> header = new Dictionary<string, string>();
+            List<Dictionary<string, Dictionary<string, string>>> data = new List<Dictionary<string, Dictionary<string, string>>>();
+
             IEnumerable<IfcProduct> products = model.Instances.OfType<IfcProduct>();
-
-            Dictionary<Dictionary<string, string>, Dictionary<string, string>> hash = new Dictionary<Dictionary<string, string>, Dictionary<string, string>>();
-
-            Dictionary<string, string> header = new Dictionary<string,string>();
+            
             header.Add("project_name", model.IfcProject.Name);
             header.Add("products_count", products.Count().ToString());
 
-            //Dictionary<string, string> dict = products.ToDictionary(p => "ok", p => p.Description.ToString());
-            //Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(dict));
-            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(header));
-            foreach (IfcProduct product in products) {
-                //Console.WriteLine(product.Name + " - " + product.Description);
-                //Console.Write("\rReading File {0}", product.Name + " - " + product.Description);
-
+            int count = 0;
+            foreach (IfcProduct product in products)
+            {
+                Dictionary<string, Dictionary<string, string>> product_d = new Dictionary<string, Dictionary<string, string>>();
+                
+                //Properties
                 List<IfcPropertySet> sets = product.GetAllPropertySets();
                 foreach (IfcPropertySet set in sets)
                 {
-                    //Console.WriteLine("-" + set.Name);
-
+                    Dictionary<string, string> pset_d = new Dictionary<string, string>();
+                    
                     foreach (IfcProperty prop in set.HasProperties)
                     {
-                        //Console.WriteLine("--" + prop.Name + "=" + product.GetPropertySingleValue(set.Name, prop.Name));
-                        
+                        pset_d.Add(prop.Name.ToString(), product.GetPropertySingleValue(set.Name, prop.Name) + "");
                     }
+
+                    if (product_d.ContainsKey(set.Name.ToString())) //mearge if already exist.
+                    { 
+                        foreach (KeyValuePair<string, string> entry in pset_d)
+                        {
+                            if (product_d.ContainsKey(set.Name))
+                            {
+                                product_d[set.Name][entry.Key] = entry.Value; //replace
+                            }
+                            else 
+                            {
+                                product_d[set.Name].Add(entry.Key, entry.Value); //add new
+                            }
+                            
+                        }
+
+                        //pset_d.ToList().ForEach(x => product_d[set.Name].Add(x.Key, x.Value));
+                    } 
+                    else 
+                    {
+                        product_d.Add(set.Name.ToString(), pset_d);
+                    }
+                    
                 }
 
-                //hash.Add("name", product.Name);
-                //hash.Add("description", product.Description);
+                Console.Write("\rCurrent count - {0}", count);
+                data.Insert(count, product_d);
+                count++;
+                //if (count == 100) { break; }
             }
+             
+            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(data));
         }
     }
 }
