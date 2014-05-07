@@ -20,7 +20,6 @@ using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.SharedBldgElements;
 using Xbim.Ifc2x3.PropertyResource;
 using Xbim.Ifc2x3.RepresentationResource;
-
  
 namespace XBIMConsole
 {
@@ -36,8 +35,11 @@ namespace XBIMConsole
 
                 model.CreateFrom(ifcLongFile, xbimLongFile);
                 model.Open(xbimLongFile, Xbim.XbimExtensions.XbimDBAccess.ReadWrite);
-                Console.WriteLine("----------------------------------------------------");
 
+                IfcProductsToJson p2j = new IfcProductsToJson();
+                p2j.writeProducts(model);
+                Console.WriteLine("----------------------------------------------------");
+                Console.ReadLine();
 
                 IfcProject project = model.IfcProject as IfcProject;
                 Console.WriteLine(project.Name + " " + project.LongName);
@@ -69,7 +71,7 @@ namespace XBIMConsole
                             {
                                 included_products_l += product.Name;
                             }
-                            Console.WriteLine("products in level=>"+included_products_l);
+                            //--Console.WriteLine("products in level=>"+included_products_l);
 
 
                             //IfcShapeRepresentation axis = level.GetAxisRepresentation();
@@ -99,12 +101,10 @@ namespace XBIMConsole
                             {
                                 IfcObjectDefinition parent_s = space.SpatialStructuralElementParent;
                                 IEnumerable<IfcObjectDefinition> children_s = space.SpatialStructuralElementChildren;
-                                //IEnumerable<IfcRelContainedInSpatialStructure> c_structures = space.ContainsElements;
-
+                                
                                 Console.WriteLine("----" + space.Name + " " + space.LongName + "["
                                     + " parent name=" + parent_s.Name
-                                    + ", parent type=" + parent_s.GetType()
-                                    //+ ", spatial structure count=" + c_structures.Count()
+                                    //--+ ", parent type=" + parent_s.GetType()
                                     + ", net floor area=" + space.GetNetFloorArea()
                                     + "]");
 
@@ -115,7 +115,7 @@ namespace XBIMConsole
                                 {
                                     included_products_s += product.Name;
                                 }
-                                //Console.WriteLine("products in space=>"+included_products_s);
+                                Console.WriteLine("products in space=>"+included_products_s);
 
                                 List<IfcPropertySet> sets = space.GetAllPropertySets();
                                 foreach (IfcPropertySet set in sets)
@@ -123,19 +123,17 @@ namespace XBIMConsole
                                     Console.WriteLine("----->" + set.Name);
                                     foreach (IfcProperty prop in set.HasProperties)
                                     {
-                                       // Console.WriteLine("-------" + prop.Name + "="+space.GetPropertySingleValue(set.Name, prop.Name));
+                                       Console.WriteLine("-------" + prop.Name + "="+space.GetPropertySingleValue(set.Name, prop.Name));
                                     }
                                 }
-
-
                             }
                         }
                     }
 
                 }
                 
-                //IEnumerable<IfcWall> walls = model.Instances.OfType<IfcWall>();
-                //Console.WriteLine(walls.Count());
+                IEnumerable<IfcWall> walls = model.Instances.OfType<IfcWall>();
+                Console.WriteLine(walls.Count());
 
             }
                 
